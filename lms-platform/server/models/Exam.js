@@ -19,6 +19,18 @@ const Exam = sequelize.define('Exam', {
         type: DataTypes.INTEGER,
         defaultValue: 100,
     },
+    startDate: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
+    deadline: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
+    durationMinutes: {
+        type: DataTypes.INTEGER,
+        defaultValue: 90,
+    },
     courseId: {
         type: DataTypes.INTEGER,
         allowNull: false

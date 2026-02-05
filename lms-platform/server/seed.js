@@ -1,4 +1,4 @@
-const { sequelize, User, ClassGroup, Course, Lecture, Lab, Exam, Question } = require('./models');
+const { sequelize, User, ClassGroup, Course, Lecture, Lab, LabTask, Exam, Question } = require('./models');
 const bcrypt = require('bcryptjs');
 
 async function seed() {
@@ -42,7 +42,7 @@ async function seed() {
         fullName: 'Teacher Bat',
     });
 
-    // Students (Auto-created logic simulated here)
+    // Students
     await User.create({
         username: '10a_001',
         password: await bcrypt.hash('123456', 10), // Default pass
@@ -52,21 +52,45 @@ async function seed() {
     });
 
     // 5. Content for Web Course
+    // Week 1: HTML
     const lecture1 = await Lecture.create({
         title: 'Intro to HTML',
         content: '# Welcome to HTML\nHTML stands for...',
         order: 1,
         points: 0,
+        startDate: new Date(),
+        deadline: new Date(new Date().setDate(new Date().getDate() + 7)),
+        isMandatory: true,
         courseId: courseWeb.id
     });
 
-    // Lab for Lecture 1
-    await Lab.create({
-        title: 'Create your first page',
-        description: 'Create index.html and add h1 tag.',
-        maxScore: 10,
+    // Lab for Lecture 1 (Multiple Tasks)
+    const lab1 = await Lab.create({
+        title: 'HTML Basics Lab',
+        description: 'Complete the following tasks to practice HTML structure.',
+        maxScore: 20,
+        language: 'html',
         lectureId: lecture1.id
     });
+
+    await LabTask.bulkCreate([
+        {
+            labId: lab1.id,
+            order: 1,
+            description: 'Create a basic HTML structure with <html>, <head>, and <body> tags.',
+            startingCode: '<!DOCTYPE html>\n<html>\n  \n</html>',
+            expectedOutput: '<html><head></head><body></body></html>', // Simplified check
+            points: 10
+        },
+        {
+            labId: lab1.id,
+            order: 2,
+            description: 'Add an <h1> tag with text "Hello World" inside the body.',
+            startingCode: '<body>\n\n</body>',
+            expectedOutput: '<h1>Hello World</h1>',
+            points: 10
+        }
+    ]);
 
     // Quiz for Lecture 1
     await Question.create({
@@ -75,6 +99,30 @@ async function seed() {
         correctAnswer: 'Hyper Text Markup Language',
         lectureId: lecture1.id,
         type: 'LECTURE_QUIZ'
+    });
+
+    // Week 2: Python
+    const lecture2 = await Lecture.create({
+        title: 'Python Syntax',
+        content: '# Python Basics\nVariables, loops...',
+        order: 1,
+        courseId: coursePython.id
+    });
+
+    const lab2 = await Lab.create({
+        title: 'Python Variables',
+        description: 'Practice Python variables',
+        maxScore: 10,
+        language: 'python',
+        lectureId: lecture2.id
+    });
+
+    await LabTask.create({
+        labId: lab2.id,
+        description: 'Print "Hello Python"',
+        startingCode: 'print()',
+        expectedOutput: 'Hello Python',
+        points: 10
     });
 
     console.log('Database Seeded!');

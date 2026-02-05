@@ -4,9 +4,11 @@ const ClassGroup = require('./ClassGroup');
 const Course = require('./Course');
 const Lecture = require('./Lecture');
 const Lab = require('./Lab');
+const LabTask = require('./LabTask');
 const Exam = require('./Exam');
 const Question = require('./Question');
 const Score = require('./Score');
+const Submission = require('./Submission');
 
 // User - Class Relationship
 ClassGroup.hasMany(User, { foreignKey: 'classGroupId' });
@@ -25,6 +27,12 @@ Lecture.belongsTo(Course, { foreignKey: 'courseId' });
 Lecture.hasOne(Lab, { foreignKey: 'lectureId' });
 Lab.belongsTo(Lecture, { foreignKey: 'lectureId' });
 
+
+
+// Lab - LabTasks
+Lab.hasMany(LabTask, { foreignKey: 'labId' });
+LabTask.belongsTo(Lab, { foreignKey: 'labId' });
+
 // Course - Exam
 Course.hasMany(Exam, { foreignKey: 'courseId' });
 Exam.belongsTo(Course, { foreignKey: 'courseId' });
@@ -41,6 +49,11 @@ Question.belongsTo(Exam, { foreignKey: 'examId' });
 User.hasMany(Score, { foreignKey: 'userId' });
 Score.belongsTo(User, { foreignKey: 'userId' });
 
+
+// Submission Relations
+User.hasMany(Submission, { foreignKey: 'userId' });
+Submission.belongsTo(User, { foreignKey: 'userId' });
+
 // Exports
 module.exports = {
     sequelize,
@@ -49,7 +62,9 @@ module.exports = {
     Course,
     Lecture,
     Lab,
+    LabTask,
     Exam,
     Question,
-    Score
+    Score,
+    Submission
 };

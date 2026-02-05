@@ -155,7 +155,14 @@ const CourseDetail = () => {
                                                 <div className="p-3 bg-blue-500/20 rounded-lg"><FaBookOpen size={20} /></div>
                                                 <div>
                                                     <p className="font-semibold text-sm">Хавсралт файл</p>
-                                                    <a href="#" className="text-xs hover:underline">Татах / Үзэх</a>
+                                                    <a
+                                                        href={`http://localhost:5000/${activeLecture.fileUrl.replace(/\\/g, '/')}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-xs hover:underline"
+                                                    >
+                                                        Татах / Үзэх
+                                                    </a>
                                                 </div>
                                             </div>
                                         )}
@@ -210,8 +217,25 @@ const CourseDetail = () => {
                                         {activeLecture.Lab ? (
                                             <div className="space-y-6">
                                                 <div className="prose prose-invert max-w-none bg-[#0f172a]/50 p-6 rounded-xl border border-white/5">
+                                                    <h4 className="text-xl font-bold text-white mb-2">{activeLecture.Lab.title}</h4>
                                                     <p className="text-gray-300">{activeLecture.Lab.description}</p>
                                                 </div>
+
+                                                {/* Tasks */}
+                                                {activeLecture.Lab.LabTasks && activeLecture.Lab.LabTasks.length > 0 && (
+                                                    <div className="space-y-4">
+                                                        <h5 className="font-semibold text-lg text-white">Даалгаварууд:</h5>
+                                                        {activeLecture.Lab.LabTasks.map((task, idx) => (
+                                                            <div key={task.id} className="bg-white/5 p-4 rounded-lg border border-white/10">
+                                                                <div className="flex justify-between">
+                                                                    <span className="font-bold text-emerald-400">Task {idx + 1}</span>
+                                                                    <span className="text-sm text-gray-500">{task.points} оноо</span>
+                                                                </div>
+                                                                <p className="text-gray-300 mt-1">{task.description}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
 
                                                 <div className="pt-6 border-t border-white/5">
                                                     <label className="block text-sm font-semibold text-gray-400 mb-3">Хариулт илгээх (Файл хуулах)</label>

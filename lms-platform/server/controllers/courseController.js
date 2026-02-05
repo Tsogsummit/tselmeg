@@ -12,7 +12,7 @@ exports.getCourses = async (req, res) => {
                     ClassGroup,
                     {
                         model: Lecture,
-                        include: [Lab]
+                        include: [{ model: Lab, include: ['LabTasks'] }]
                     },
                     Exam
                 ]
@@ -25,7 +25,7 @@ exports.getCourses = async (req, res) => {
                     include: [
                         {
                             model: Lecture,
-                            include: [Lab]
+                            include: [{ model: Lab, include: ['LabTasks'] }]
                         },
                         Exam
                     ]
@@ -46,7 +46,10 @@ exports.getCourse = async (req, res) => {
             include: [
                 {
                     model: Lecture,
-                    include: [Lab, Question] // Include Lab and Quiz
+                    include: [
+                        { model: Lab, include: ['LabTasks'] }, // Include Labs and their Tasks
+                        Question
+                    ] // Include Lab and Quiz
                 },
                 {
                     model: Exam
@@ -66,7 +69,14 @@ exports.getCourse = async (req, res) => {
 exports.createLecture = async (req, res) => {
     try {
         console.log("Create Lecture Request Body:", req.body);
-        const lecture = await Lecture.create(req.body); // { title, content, courseId, order }
+        console.log("Create Lecture File:", req.file);
+
+        const lectureData = {
+            ...req.body,
+            fileUrl: req.file ? req.file.path : null // Save file path if uploaded
+        };
+
+        const lecture = await Lecture.create(lectureData);
         console.log("Lecture Created:", lecture);
         res.status(201).json(lecture);
     } catch (error) {

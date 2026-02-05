@@ -1,32 +1,36 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Lab = sequelize.define('Lab', {
+const LabTask = sequelize.define('LabTask', {
     id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
     },
-    title: {
-        type: DataTypes.STRING,
+    description: {
+        type: DataTypes.TEXT, // Specific instructions for this task
         allowNull: false,
     },
-    description: {
+    startingCode: {
         type: DataTypes.TEXT,
         allowNull: true,
     },
-    maxScore: {
+    expectedOutput: {
+        type: DataTypes.TEXT,
+        allowNull: true, // For auto-grading
+    },
+    points: {
         type: DataTypes.INTEGER,
         defaultValue: 10,
     },
-    language: {
-        type: DataTypes.ENUM('html', 'python', 'javascript'),
-        defaultValue: 'html',
+    order: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1,
     },
-    lectureId: {
+    labId: {
         type: DataTypes.INTEGER,
         allowNull: false
     }
 });
 
-module.exports = Lab;
+module.exports = LabTask;

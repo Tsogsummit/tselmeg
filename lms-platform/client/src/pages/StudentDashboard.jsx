@@ -135,40 +135,50 @@ const StudentDashboard = () => {
                         animate="visible"
                     >
                         {activeTab === 'home' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                {courses.map((course, index) => (
-                                    <motion.div
-                                        key={course.id}
-                                        variants={itemVariants}
-                                        whileHover={{ y: -10, transition: { duration: 0.2 } }}
-                                        className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300"
-                                    >
-                                        <div className={`h-40 relative overflow-hidden bg-gradient-to-br ${index % 2 === 0 ? 'from-blue-600 to-indigo-700' : 'from-purple-600 to-pink-700'}`}>
-                                            <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-                                            <div className="absolute bottom-4 left-4">
-                                                <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-lg text-xs font-semibold text-white border border-white/10">
-                                                    {course.ClassGroups?.length > 0 ? 'Судалж буй' : 'Нээлттэй'}
-                                                </span>
-                                            </div>
-                                        </div>
+                            <>
+                                {courses.length > 0 ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                        {courses.map((course, index) => (
+                                            <motion.div
+                                                key={course.id}
+                                                variants={itemVariants}
+                                                whileHover={{ y: -10, transition: { duration: 0.2 } }}
+                                                className="group bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300"
+                                            >
+                                                <div className={`h-40 relative overflow-hidden bg-gradient-to-br ${index % 2 === 0 ? 'from-blue-600 to-indigo-700' : 'from-purple-600 to-pink-700'}`}>
+                                                    <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                                                    <div className="absolute bottom-4 left-4">
+                                                        <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-lg text-xs font-semibold text-white border border-white/10">
+                                                            {course.ClassGroups?.length > 0 ? 'Судалж буй' : 'Нээлттэй'}
+                                                        </span>
+                                                    </div>
+                                                </div>
 
-                                        <div className="p-6">
-                                            <h3 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors">
-                                                {course.name}
-                                            </h3>
-                                            <p className="text-gray-400 text-sm mb-6 line-clamp-2">
-                                                {course.description || "Энэхүү хичээлийг судалснаар та шинэ мэдлэг эзэмших болно."}
-                                            </p>
+                                                <div className="p-6">
+                                                    <h3 className="text-xl font-bold text-white mb-2 group-hover:text-indigo-400 transition-colors">
+                                                        {course.name}
+                                                    </h3>
+                                                    <p className="text-gray-400 text-sm mb-6 line-clamp-2">
+                                                        {course.description || "Энэхүү хичээлийг судалснаар та шинэ мэдлэг эзэмших болно."}
+                                                    </p>
 
-                                            <div className="flex items-center justify-between border-t border-white/10 pt-4 mt-auto">
-                                                <Link to={`/course/${course.id}`} className="flex items-center gap-2 bg-white text-indigo-900 px-4 py-2 rounded-xl font-bold text-sm hover:bg-indigo-50 transition-colors transform active:scale-95 w-full justify-center">
-                                                    <FaPlayCircle /> Үргэлжлүүлэх
-                                                </Link>
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                ))}
-                            </div>
+                                                    <div className="flex items-center justify-between border-t border-white/10 pt-4 mt-auto">
+                                                        <Link to={`/course/${course.id}`} className="flex items-center gap-2 bg-white text-indigo-900 px-4 py-2 rounded-xl font-bold text-sm hover:bg-indigo-50 transition-colors transform active:scale-95 w-full justify-center">
+                                                            <FaPlayCircle /> Үргэлжлүүлэх
+                                                        </Link>
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-20 bg-white/5 rounded-3xl border border-white/10">
+                                        <FaBook className="text-6xl text-gray-600 mx-auto mb-4" />
+                                        <h3 className="text-xl font-bold text-white mb-2">Хичээл олдсонгүй</h3>
+                                        <p className="text-gray-400">Танд одоогоор ямар нэгэн хичээл хуваарилагдаагүй байна.</p>
+                                    </div>
+                                )}
+                            </>
                         )}
 
                         {activeTab === 'lectures' && (
@@ -188,7 +198,7 @@ const StudentDashboard = () => {
 
                         {activeTab === 'labs' && (
                             <div className="space-y-4">
-                                {courses.flatMap(c => c.Lectures?.flatMap(l => l.Labs?.map(lab => ({ ...lab, lectureTitle: l.title, courseName: c.name, courseId: c.id }))) || []).map((lab, idx) => (
+                                {courses.flatMap(c => c.Lectures?.filter(l => l.Lab).map(l => ({ ...l.Lab, lectureTitle: l.title, courseName: c.name, courseId: c.id })) || []).map((lab, idx) => (
                                     <motion.div key={lab.id || idx} variants={itemVariants} className="bg-white/5 border border-white/10 p-4 rounded-xl flex items-center justify-between hover:bg-white/10 transition">
                                         <div>
                                             <h4 className="font-bold text-lg">{lab.title}</h4>
@@ -197,7 +207,7 @@ const StudentDashboard = () => {
                                         <Link to={`/course/${lab.courseId}`} className="px-4 py-2 bg-pink-600 rounded-lg text-sm font-bold hover:bg-pink-500">Гүйцэтгэх</Link>
                                     </motion.div>
                                 ))}
-                                {courses.every(c => c.Lectures?.every(l => !l.Labs?.length)) && <p className="text-gray-500 text-center py-10">Лабораторийн ажил олдсонгүй.</p>}
+                                {courses.every(c => c.Lectures?.every(l => !l.Lab)) && <p className="text-gray-500 text-center py-10">Лабораторийн ажил олдсонгүй.</p>}
                             </div>
                         )}
 

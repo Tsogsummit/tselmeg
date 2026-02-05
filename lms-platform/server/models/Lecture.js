@@ -28,6 +28,22 @@ const Lecture = sequelize.define('Lecture', {
         type: DataTypes.INTEGER,
         defaultValue: 0,
     },
+    startDate: {
+        type: DataTypes.DATE,
+        allowNull: true, // Available from
+    },
+    deadline: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
+    durationMinutes: {
+        type: DataTypes.INTEGER,
+        defaultValue: 30, // Default 30 mins for quiz
+    },
+    isMandatory: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+    },
     courseId: {
         type: DataTypes.INTEGER,
         allowNull: false

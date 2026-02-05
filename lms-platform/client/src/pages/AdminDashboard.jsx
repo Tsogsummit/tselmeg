@@ -56,10 +56,19 @@ const AdminDashboard = () => {
         }
 
         try {
-            await api.post('/courses/lectures', {
-                ...newLecture,
-                order: parseInt(newLecture.order) || 1,
-                courseId: courseId
+            const formData = new FormData();
+            formData.append('title', newLecture.title);
+            formData.append('content', newLecture.content);
+            formData.append('order', parseInt(newLecture.order) || 1);
+            formData.append('courseId', courseId);
+            if (newLecture.file) {
+                formData.append('file', newLecture.file);
+            }
+
+            // Important: Do not set Content-Type manually with axios when sending FormData
+            // Axios will set it automatically to multipart/form-data with the correct boundary
+            await api.post('/courses/lectures', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
             });
             setShowAddLecture(false);
             setNewLecture({ title: '', content: '', order: 1, courseId: '' });
@@ -241,7 +250,7 @@ const AdminDashboard = () => {
                                             <div className="flex justify-between text-sm items-center">
                                                 <span className="text-gray-500 flex items-center gap-2"><FaFlask size={14} /> Лаб</span>
                                                 <span className="bg-white/5 px-2 py-0.5 rounded text-gray-300 text-xs">
-                                                    {course.Lectures?.reduce((acc, l) => acc + (l.Labs?.length || 0), 0) || 0} даалгавар
+                                                    {course.Lectures?.reduce((acc, l) => acc + (l.Lab ? 1 : 0), 0) || 0} даалгавар
                                                 </span>
                                             </div>
                                         </div>
@@ -360,7 +369,7 @@ const AdminDashboard = () => {
                         })()}
 
                         {activeTab === 'labs' && (() => {
-                            const allLabs = courses.flatMap(c => c.Lectures?.flatMap(l => l.Labs?.map(lab => ({ ...lab, courseName: c.name, lectureTitle: l.title }))) || []);
+                            const allLabs = courses.flatMap(c => c.Lectures?.map(l => l.Lab ? { ...l.Lab, courseName: c.name, lectureTitle: l.title } : null).filter(Boolean) || []);
                             return (
                                 <div className="bg-[#1e293b]/60 backdrop-blur-md rounded-3xl border border-white/5 p-6">
                                     <div className="flex justify-between items-center mb-6">
@@ -494,6 +503,15 @@ const AdminDashboard = () => {
                                             className="w-full px-4 py-3 bg-[#0f172a] border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-white"
                                             value={newLecture.order}
                                             onChange={e => setNewLecture({ ...newLecture, order: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-300 mb-2">Хавсралт файл (PPT / PDF)</label>
+                                        <input
+                                            type="file"
+                                            accept=".pdf, .ppt, .pptx"
+                                            className="w-full px-4 py-3 bg-[#0f172a] border border-white/10 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer"
+                                            onChange={e => setNewLecture({ ...newLecture, file: e.target.files[0] })}
                                         />
                                     </div>
                                 </div>
