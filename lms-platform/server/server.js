@@ -31,12 +31,18 @@ const startServer = async () => {
         // Sync models (force: false ensures we don't drop tables on restart, alter: true updates schema)
         // In production, use migrations. For this MVP, sync is fine.
         // Disable foreign keys check for SQLite to avoid constraint errors during alter
-        await sequelize.query('PRAGMA foreign_keys = OFF;');
-        await sequelize.query('DROP TABLE IF EXISTS `Courses_backup`;');
-        await sequelize.query('DROP TABLE IF EXISTS `ClassCourses_backup`;');
-        // Fix: avoid alter: true with SQLite for M:N relations to prevent UNIQUE constraint errors
-        await sequelize.sync({ alter: false });
-        await sequelize.query('PRAGMA foreign_keys = ON;');
+        if (sequelize.getDialect() === 'sqlite') {
+            await sequelize.query('PRAGMA foreign_keys = OFF;');
+            await sequelize.query('DROP TABLE IF EXISTS `Courses_backup`;');
+            await sequelize.query('DROP TABLE IF EXISTS `ClassCourses_backup`;');
+        }
+
+        // Sync models (force: false ensures we don't drop tables on restart, alter: true updates schema)
+        await sequelize.sync({ alter: true });
+
+        if (sequelize.getDialect() === 'sqlite') {
+            await sequelize.query('PRAGMA foreign_keys = ON;');
+        }
 
         app.listen(PORT, () => {
             console.log(`Server running on port ${PORT}`);

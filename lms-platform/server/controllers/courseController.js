@@ -39,6 +39,17 @@ exports.getCourses = async (req, res) => {
     }
 };
 
+// Create Course
+exports.createCourse = async (req, res) => {
+    try {
+        const course = await Course.create(req.body);
+        res.status(201).json(course);
+    } catch (error) {
+        console.error("Create Course Error:", error);
+        res.status(500).json({ message: 'Error creating course' });
+    }
+};
+
 // Get Course Details (with Lectures, Labs, Exams)
 exports.getCourse = async (req, res) => {
     try {

@@ -1,4 +1,4 @@
-const { Submission, Lab, LabTask } = require('../models');
+const { Submission, Lab, LabTask, Score } = require('../models');
 const gradingService = require('../services/gradingService');
 
 exports.submitLab = async (req, res) => {
@@ -10,6 +10,20 @@ exports.submitLab = async (req, res) => {
         const lab = await Lab.findByPk(labId);
         if (!lab) {
             return res.status(404).json({ message: 'Lab not found' });
+        }
+
+        // Check Allowed Attempts
+        if (lab.allowedAttempts !== -1) {
+            const submissionCount = await Submission.count({
+                where: {
+                    userId,
+                    referenceId: labId,
+                    type: 'LAB'
+                }
+            });
+            if (submissionCount >= lab.allowedAttempts) {
+                return res.status(403).json({ message: `Max attempts (${lab.allowedAttempts}) reached` });
+            }
         }
 
         // 2. Fetch test cases (assuming they are stored in the Lab model as JSON or separate table)
@@ -31,6 +45,26 @@ exports.submitLab = async (req, res) => {
             memoryUsage: gradingResult.memoryUsage,
             score: gradingResult.score
         });
+
+        // 5. Update/Create Score (Keep Highest)
+        let existingScore = await Score.findOne({
+            where: { userId, type: 'LAB', referenceId: labId }
+        });
+
+        if (existingScore) {
+            if (gradingResult.score > existingScore.score) {
+                existingScore.score = gradingResult.score;
+                await existingScore.save();
+            }
+        } else {
+            await Score.create({
+                userId,
+                type: 'LAB',
+                referenceId: labId,
+                score: gradingResult.score,
+                maxScore: gradingResult.maxScore
+            });
+        }
 
         res.status(201).json({
             message: 'Submission received',

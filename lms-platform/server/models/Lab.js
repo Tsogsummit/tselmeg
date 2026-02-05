@@ -31,6 +31,10 @@ const Lab = sequelize.define('Lab', {
         type: DataTypes.ENUM('html', 'python', 'javascript', 'java', 'cpp'),
         defaultValue: 'javascript',
     },
+    allowedAttempts: {
+        type: DataTypes.INTEGER,
+        defaultValue: -1, // -1 means unlimited
+    },
     instruction: {
         type: DataTypes.TEXT, // Markdown content or file path
         allowNull: true

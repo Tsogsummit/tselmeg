@@ -52,9 +52,17 @@ const Course = sequelize.define('Course', {
         type: DataTypes.INTEGER,
         defaultValue: 50
     },
+    allowLateSubmission: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    latePenalty: {
+        type: DataTypes.INTEGER, // Percentage per day, e.g., 10
+        defaultValue: 0
+    },
     gradingScheme: {
         type: DataTypes.JSON, // Stores { lectures: 20, labs: 40, finalExam: 40 }
-        defaultValue: { lectures: 20, labs: 40, exams: 40 }
+        defaultValue: { lectures: 20, labs: 40, finalExam: 40 }
     }
 });
 

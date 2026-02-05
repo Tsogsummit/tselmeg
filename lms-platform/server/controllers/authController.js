@@ -52,6 +52,67 @@ exports.login = async (req, res) => {
         console.error('Login Error:', error);
         res.status(500).json({ message: 'Server error' });
     }
+
+};
+
+exports.register = async (req, res) => {
+    try {
+        const { username, email, password, role, fullName, studentId, specialization, classYear } = req.body;
+        const requester = req.user; // From protect middleware
+
+        // Permission Check
+        if (requester.role === 'student') {
+            return res.status(403).json({ message: 'Not authorized to create users' });
+        }
+        if (requester.role === 'teacher' && role !== 'student') {
+            return res.status(403).json({ message: 'Teachers can only create students' });
+        }
+        // Admin can create 'teacher' or 'student'
+
+        // Check if user exists
+        const { Op } = require('sequelize');
+        let userExists = await User.findOne({
+            where: {
+                [Op.or]: [
+                    { username },
+                    { email: email || '' } // Handle null email if needed
+                ]
+            }
+        });
+
+        if (userExists) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        // Create User
+        const user = await User.create({
+            username,
+            email,
+            password: hashedPassword,
+            role,
+            fullName,
+            studentId,
+            specialization,
+            classYear
+        });
+
+        res.status(201).json({
+            message: 'User registered successfully',
+            user: {
+                id: user.id,
+                username: user.username,
+                role: user.role
+            }
+        });
+
+    } catch (error) {
+        console.error('Registration Error:', error);
+        res.status(500).json({ message: 'Server error during registration' });
+    }
 };
 
 exports.getMe = async (req, res) => {
