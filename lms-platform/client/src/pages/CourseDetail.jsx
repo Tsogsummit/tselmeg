@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaBookOpen, FaFlask, FaCheckCircle, FaArrowLeft, FaChevronDown, FaClock } from 'react-icons/fa';
+import Editor from '@monaco-editor/react';
 
 const CourseDetail = () => {
     const { id } = useParams();
@@ -11,6 +12,8 @@ const CourseDetail = () => {
     const [loading, setLoading] = useState(true);
     const [activeLecture, setActiveLecture] = useState(null);
     const [activeTab, setActiveTab] = useState('content'); // content, quiz, lab
+    const [code, setCode] = useState('');
+    const [submissionResult, setSubmissionResult] = useState(null);
 
     useEffect(() => {
         const fetchCourse = async () => {
@@ -28,6 +31,27 @@ const CourseDetail = () => {
         };
         fetchCourse();
     }, [id]);
+
+    const handleEditorChange = (value) => {
+        setCode(value);
+    };
+
+    const handleSubmitCode = async () => {
+        if (!activeLecture?.Lab) return;
+
+        try {
+            const res = await api.post('/submissions/submit', {
+                labId: activeLecture.Lab.id,
+                code: code,
+                language: activeLecture.Lab.language
+            });
+            setSubmissionResult(res.data);
+            alert(`Илгээгдлээ! Оноо: ${res.data.result.score}/${res.data.result.maxScore}`);
+        } catch (err) {
+            console.error(err);
+            alert('Алдаа гарлаа');
+        }
+    };
 
     if (loading) {
         return (
@@ -66,7 +90,12 @@ const CourseDetail = () => {
                     {course.Lectures?.map((lecture, index) => (
                         <div
                             key={lecture.id}
-                            onClick={() => { setActiveLecture(lecture); setActiveTab('content'); }}
+                            onClick={() => {
+                                setActiveLecture(lecture);
+                                setActiveTab('content');
+                                setCode(''); // Reset code or load saved code
+                                setSubmissionResult(null);
+                            }}
                             className={`p-4 rounded-xl cursor-pointer border transition-all duration-200 group relative overflow-hidden ${activeLecture?.id === lecture.id
                                 ? 'bg-indigo-600 border-indigo-500 shadow-lg shadow-indigo-600/20'
                                 : 'bg-white/5 border-transparent hover:bg-white/10 hover:border-white/10'
@@ -127,7 +156,6 @@ const CourseDetail = () => {
                                 >
                                     <FaFlask className="inline-block mr-2" /> Лаборатори
                                 </button>
-                                {/* Quiz Button logic could be here */}
                             </div>
 
                             {/* Content View */}
@@ -138,37 +166,42 @@ const CourseDetail = () => {
                                     className="space-y-8"
                                 >
                                     <div className="prose prose-invert prose-lg max-w-none">
-                                        {/* Rendering Markdown/HTML content safely would ideally use a library */}
                                         <div className="bg-[#1e293b]/40 p-8 rounded-3xl border border-white/5 shadow-2xl">
-                                            {activeLecture.content ? (
+                                            {activeLecture.description ? (
                                                 <div className="whitespace-pre-wrap font-light text-gray-300 leading-relaxed">
-                                                    {activeLecture.content}
+                                                    {activeLecture.description}
                                                 </div>
                                             ) : (
                                                 <p className="text-gray-500 italic">Агуулга одоогоор хоосон байна.</p>
                                             )}
                                         </div>
 
-                                        {/* File Attachments Placeholder */}
-                                        {activeLecture.fileUrl && (
-                                            <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center gap-4 text-blue-300">
-                                                <div className="p-3 bg-blue-500/20 rounded-lg"><FaBookOpen size={20} /></div>
-                                                <div>
-                                                    <p className="font-semibold text-sm">Хавсралт файл</p>
-                                                    <a
-                                                        href={`http://localhost:5000/${activeLecture.fileUrl.replace(/\\/g, '/')}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-xs hover:underline"
-                                                    >
-                                                        Татах / Үзэх
-                                                    </a>
-                                                </div>
+                                        {/* File Attachments */}
+                                        {activeLecture.materials && activeLecture.materials.length > 0 && (
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                                                {activeLecture.materials.map((material, idx) => (
+                                                    <div key={idx} className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center gap-4 text-blue-300">
+                                                        <div className="p-3 bg-blue-500/20 rounded-lg">
+                                                            <FaBookOpen size={20} />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-semibold text-sm">{material.title || 'Material'}</p>
+                                                            <a
+                                                                href={material.url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="text-xs hover:underline"
+                                                            >
+                                                                {material.type === 'video' ? 'Үзэх' : 'Татах / Үзэх'}
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
                                         )}
                                     </div>
 
-                                    {/* Quiz Section at Bottom */}
+                                    {/* Quiz Section */}
                                     <div className="mt-12 p-8 bg-gradient-to-br from-indigo-900/40 to-purple-900/40 rounded-3xl border border-indigo-500/30">
                                         <h4 className="text-xl font-bold text-white mb-4">Мэдлэг Шалагах</h4>
                                         {activeLecture.Questions?.length > 0 ? (
@@ -210,7 +243,7 @@ const CourseDetail = () => {
                                             </div>
                                             <div>
                                                 <h3 className="text-2xl font-bold text-white">Лабораторийн Ажил</h3>
-                                                <p className="text-emerald-400/80 text-sm">{activeLecture.Lab?.maxScore || 10} оноо</p>
+                                                <p className="text-emerald-400/80 text-sm">{activeLecture.Lab?.points || 10} оноо</p>
                                             </div>
                                         </div>
 
@@ -238,19 +271,53 @@ const CourseDetail = () => {
                                                 )}
 
                                                 <div className="pt-6 border-t border-white/5">
-                                                    <label className="block text-sm font-semibold text-gray-400 mb-3">Хариулт илгээх (Файл хуулах)</label>
-                                                    <div className="border-2 border-dashed border-white/10 rounded-2xl p-8 text-center hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all cursor-pointer">
-                                                        <FaCheckCircle className="mx-auto text-3xl text-gray-600 mb-2" />
-                                                        <p className="text-gray-400">Файлаа энд чирж оруулах эсвэл дарж сонгоно уу</p>
-                                                        <p className="text-xs text-gray-600 mt-1">Зөвшөөрөгдсөн: .zip, .pdf, .py, .html</p>
+                                                    <label className="block text-sm font-semibold text-gray-400 mb-3">Код бичих орчин</label>
+                                                    <div className="h-[400px] border border-white/10 rounded-xl overflow-hidden shadow-inner bg-[#1e1e1e]">
+                                                        <Editor
+                                                            height="100%"
+                                                            defaultLanguage={activeLecture.Lab.language || 'javascript'}
+                                                            defaultValue={activeLecture.Lab.starterCode || '// Write your code here'}
+                                                            theme="vs-dark"
+                                                            onChange={handleEditorChange}
+                                                            onMount={(editor) => {
+                                                                // Set initial value to starter code if code is empty
+                                                                if (!code && activeLecture.Lab.starterCode) {
+                                                                    setCode(activeLecture.Lab.starterCode);
+                                                                }
+                                                            }}
+                                                            options={{
+                                                                minimap: { enabled: false },
+                                                                fontSize: 14,
+                                                            }}
+                                                        />
                                                     </div>
                                                 </div>
 
-                                                <div className="flex justify-end">
-                                                    <button className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition">
-                                                        Илгэх
+                                                <div className="flex justify-end gap-3 mt-4">
+                                                    <button className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-xl transition">
+                                                        Тест ажиллуулах
+                                                    </button>
+                                                    <button
+                                                        onClick={handleSubmitCode}
+                                                        className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition">
+                                                        Илгээх
                                                     </button>
                                                 </div>
+
+                                                {/* Submission Result */}
+                                                {submissionResult && (
+                                                    <div className="mt-6 bg-black/30 p-4 rounded-xl border border-white/10">
+                                                        <h4 className="font-bold text-white mb-2">Үр дүн: {submissionResult.result.score} / {submissionResult.result.maxScore}</h4>
+                                                        <div className="space-y-2">
+                                                            {submissionResult.result.details.map((test, idx) => (
+                                                                <div key={idx} className={`flex justify-between p-2 rounded ${test.passed ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'}`}>
+                                                                    <span>Test Case #{idx + 1}</span>
+                                                                    <span>{test.passed ? 'Passed' : 'Failed'}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         ) : (
                                             <div className="text-center py-10">

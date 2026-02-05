@@ -19,6 +19,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/courses', require('./routes/courseRoutes'));
 app.use('/api/scores', require('./routes/scoreRoutes'));
+app.use('/api/submissions', require('./routes/submissionRoutes'));
 
 
 // Database Sync and Server Start

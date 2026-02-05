@@ -11,36 +11,36 @@ const Lecture = sequelize.define('Lecture', {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    content: {
-        type: DataTypes.TEXT, // Markdown or HTML description
-        allowNull: true,
-    },
-    fileUrl: {
-        type: DataTypes.STRING, // Path to PDF/Video
+    description: {
+        type: DataTypes.TEXT, // Markdown description
         allowNull: true,
     },
     order: {
-        type: DataTypes.INTEGER, // Week number or sequence
+        type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 1,
+    },
+    materials: {
+        type: DataTypes.JSON, // Array of { type: 'pdf'|'video', url: '...', title: '...' }
+        defaultValue: []
     },
     points: {
         type: DataTypes.INTEGER,
         defaultValue: 0,
     },
-    startDate: {
-        type: DataTypes.DATE,
-        allowNull: true, // Available from
-    },
-    deadline: {
+    availableFrom: {
         type: DataTypes.DATE,
         allowNull: true,
     },
-    durationMinutes: {
-        type: DataTypes.INTEGER,
-        defaultValue: 30, // Default 30 mins for quiz
+    deadline: { // Optional deadline for viewing/quiz
+        type: DataTypes.DATE,
+        allowNull: true,
     },
-    isMandatory: {
+    estimatedDuration: {
+        type: DataTypes.INTEGER, // minutes
+        defaultValue: 90,
+    },
+    mandatory: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
     },

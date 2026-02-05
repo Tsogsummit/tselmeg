@@ -83,12 +83,23 @@ const AdminDashboard = () => {
     const handleAddLab = async (e) => {
         e.preventDefault();
         try {
+            let parsedTestCases = [];
+            try {
+                if (newLab.testCases) {
+                    parsedTestCases = JSON.parse(newLab.testCases);
+                }
+            } catch (jsonErr) {
+                alert('Test Cases JSON is invalid!');
+                return;
+            }
+
             await api.post('/courses/labs', {
                 ...newLab,
-                maxScore: parseInt(newLab.maxScore) || 10
+                points: parseInt(newLab.points) || 10,
+                testCases: parsedTestCases
             });
             setShowAddLab(false);
-            setNewLab({ title: '', description: '', maxScore: 10, lectureId: '' });
+            setNewLab({ title: '', description: '', points: 10, lectureId: '', language: 'javascript', starterCode: '', testCases: '' });
             alert('Lab added successfully!');
             fetchInitialData();
         } catch (error) {
@@ -537,29 +548,57 @@ const AdminDashboard = () => {
                                 <h3 className="text-xl font-bold text-white">Лаборатори Нэмэх</h3>
                                 <button onClick={() => setShowAddLab(false)}><FaTimes className="text-gray-400 hover:text-white" /></button>
                             </div>
-                            <form onSubmit={handleAddLab} className="space-y-4">
+                            <form onSubmit={handleAddLab} className="space-y-4 max-h-[80vh] overflow-y-auto pr-2">
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-300 mb-2">Гарчиг</label>
                                     <input type="text" required className="w-full px-4 py-3 bg-[#0f172a] rounded-xl border border-white/10 text-white focus:ring-2 focus:ring-indigo-500 outline-none" value={newLab.title} onChange={e => setNewLab({ ...newLab, title: e.target.value })} />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-300 mb-2">Тайлбар</label>
-                                    <textarea className="w-full px-4 py-3 bg-[#0f172a] rounded-xl border border-white/10 text-white h-24 focus:ring-2 focus:ring-indigo-500 outline-none" value={newLab.description} onChange={e => setNewLab({ ...newLab, description: e.target.value })}></textarea>
+                                    <textarea className="w-full px-4 py-3 bg-[#0f172a] rounded-xl border border-white/10 text-white h-20 focus:ring-2 focus:ring-indigo-500 outline-none" value={newLab.description} onChange={e => setNewLab({ ...newLab, description: e.target.value })}></textarea>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-300 mb-2">Оноо</label>
-                                        <input type="number" className="w-full px-4 py-3 bg-[#0f172a] rounded-xl border border-white/10 text-white focus:ring-2 focus:ring-indigo-500 outline-none" value={newLab.maxScore} onChange={e => setNewLab({ ...newLab, maxScore: e.target.value })} />
+                                        <input type="number" className="w-full px-4 py-3 bg-[#0f172a] rounded-xl border border-white/10 text-white focus:ring-2 focus:ring-indigo-500 outline-none" value={newLab.points} onChange={e => setNewLab({ ...newLab, points: e.target.value })} />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-300 mb-2">Лекц сонгох</label>
-                                        <select required className="w-full px-4 py-3 bg-[#0f172a] rounded-xl border border-white/10 text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none" value={newLab.lectureId} onChange={e => setNewLab({ ...newLab, lectureId: e.target.value })}>
-                                            <option value="">Сонгох...</option>
-                                            {courses.flatMap(c => c.Lectures || []).map(l => (
-                                                <option key={l.id} value={l.id}>{l.title}</option>
-                                            ))}
+                                        <label className="block text-sm font-semibold text-gray-300 mb-2">Хэл</label>
+                                        <select className="w-full px-4 py-3 bg-[#0f172a] rounded-xl border border-white/10 text-white focus:ring-2 focus:ring-indigo-500 outline-none" value={newLab.language || 'javascript'} onChange={e => setNewLab({ ...newLab, language: e.target.value })}>
+                                            <option value="javascript">JavaScript</option>
+                                            <option value="python">Python</option>
+                                            <option value="java">Java</option>
+                                            <option value="cpp">C++</option>
                                         </select>
                                     </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-300 mb-2">Эхлэх Код (Starter Code)</label>
+                                    <textarea
+                                        className="w-full px-4 py-3 bg-[#0f172a] rounded-xl border border-white/10 text-white font-mono text-sm h-32 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        value={newLab.starterCode}
+                                        onChange={e => setNewLab({ ...newLab, starterCode: e.target.value })}
+                                        placeholder="// Student starts with this code..."
+                                    ></textarea>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-300 mb-2">Тестүүд (JSON формат)</label>
+                                    <textarea
+                                        className="w-full px-4 py-3 bg-[#0f172a] rounded-xl border border-white/10 text-white font-mono text-xs h-32 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        value={newLab.testCases}
+                                        onChange={e => setNewLab({ ...newLab, testCases: e.target.value })}
+                                        placeholder='[{"input": "1", "expectedOutput": "2", "points": 5}]'
+                                    ></textarea>
+                                    <p className="text-xs text-gray-500 mt-1">Format: Array of objects with input, expectedOutput, points</p>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-300 mb-2">Лекц сонгох</label>
+                                    <select required className="w-full px-4 py-3 bg-[#0f172a] rounded-xl border border-white/10 text-white focus:ring-2 focus:ring-indigo-500 outline-none appearance-none" value={newLab.lectureId} onChange={e => setNewLab({ ...newLab, lectureId: e.target.value })}>
+                                        <option value="">Сонгох...</option>
+                                        {courses.flatMap(c => c.Lectures || []).map(l => (
+                                            <option key={l.id} value={l.id}>{l.title}</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <button type="submit" className="w-full bg-pink-600 hover:bg-pink-500 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-pink-500/20 mt-2">Лаб Үүсгэх</button>
                             </form>

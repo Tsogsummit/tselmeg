@@ -15,13 +15,33 @@ const Lab = sequelize.define('Lab', {
         type: DataTypes.TEXT,
         allowNull: true,
     },
-    maxScore: {
+    order: {
+        type: DataTypes.INTEGER,
+        defaultValue: 1,
+    },
+    points: {
         type: DataTypes.INTEGER,
         defaultValue: 10,
     },
+    deadline: {
+        type: DataTypes.DATE,
+        allowNull: true
+    },
     language: {
-        type: DataTypes.ENUM('html', 'python', 'javascript'),
-        defaultValue: 'html',
+        type: DataTypes.ENUM('html', 'python', 'javascript', 'java', 'cpp'),
+        defaultValue: 'javascript',
+    },
+    instruction: {
+        type: DataTypes.TEXT, // Markdown content or file path
+        allowNull: true
+    },
+    starterCode: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    testCases: {
+        type: DataTypes.JSON, // Array of test cases { input, expectedOutput, hidden }
+        defaultValue: []
     },
     lectureId: {
         type: DataTypes.INTEGER,

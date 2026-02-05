@@ -12,24 +12,40 @@ const Exam = sequelize.define('Exam', {
         allowNull: false,
     },
     type: {
-        type: DataTypes.ENUM('MIDTERM', 'FINAL', 'FUN', 'PROGRESS'),
-        defaultValue: 'PROGRESS',
+        type: DataTypes.ENUM('midterm', 'final', 'quiz'),
+        defaultValue: 'midterm'
     },
-    maxScore: {
+    totalPoints: {
         type: DataTypes.INTEGER,
-        defaultValue: 100,
+        defaultValue: 100
     },
-    startDate: {
+    duration: {
+        type: DataTypes.INTEGER, // minutes
+        defaultValue: 120
+    },
+    startTime: {
         type: DataTypes.DATE,
-        allowNull: true,
+        allowNull: false
     },
-    deadline: {
+    endTime: {
         type: DataTypes.DATE,
-        allowNull: true,
+        allowNull: false
     },
-    durationMinutes: {
-        type: DataTypes.INTEGER,
-        defaultValue: 90,
+    instructions: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    allowedResources: {
+        type: DataTypes.JSON, // ['notes', 'textbook']
+        defaultValue: []
+    },
+    proctored: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    structure: {
+        type: DataTypes.JSON, // Sections and questions
+        allowNull: true
     },
     courseId: {
         type: DataTypes.INTEGER,

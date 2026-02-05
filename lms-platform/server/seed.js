@@ -17,8 +17,26 @@ async function seed() {
     ]);
 
     // 2. Create Courses
-    const courseWeb = await Course.create({ name: 'Web Development (HTML/CSS/JS)', description: 'Introduction to Web' });
-    const coursePython = await Course.create({ name: 'Python Programming', description: 'Advanced Programming' });
+    const courseWeb = await Course.create({
+        name: 'Web Development (HTML/CSS/JS)',
+        courseCode: 'CS101',
+        description: 'Introduction to Web',
+        semester: 'Fall 2024',
+        credits: 3,
+        department: 'CS',
+        gradingScheme: { lectures: 20, labs: 40, exams: 40 },
+        startDate: '2024-09-01',
+        endDate: '2024-12-31'
+    });
+    const coursePython = await Course.create({
+        name: 'Python Programming',
+        courseCode: 'CS102',
+        description: 'Advanced Programming',
+        semester: 'Fall 2024',
+        credits: 3,
+        department: 'CS',
+        gradingScheme: { lectures: 20, labs: 50, exams: 30 }
+    });
 
     // 3. Assign Courses to Classes
     // 10a, 10b -> Web
@@ -37,6 +55,7 @@ async function seed() {
     const adminPass = await bcrypt.hash('admin123', 10);
     await User.create({
         username: 'admin',
+        email: 'admin@school.edu',
         password: adminPass,
         role: 'admin',
         fullName: 'Teacher Bat',
@@ -45,6 +64,8 @@ async function seed() {
     // Students
     await User.create({
         username: '10a_001',
+        studentId: 'ST2024001',
+        email: 'student1@school.edu',
         password: await bcrypt.hash('123456', 10), // Default pass
         role: 'student',
         fullName: 'Bat Bold',
@@ -55,12 +76,15 @@ async function seed() {
     // Week 1: HTML
     const lecture1 = await Lecture.create({
         title: 'Intro to HTML',
-        content: '# Welcome to HTML\nHTML stands for...',
+        description: '# Welcome to HTML\nHTML stands for...',
         order: 1,
+        materials: [
+            { type: 'pdf', title: 'HTML Slides', url: '/uploads/lecture1.pdf' },
+            { type: 'video', title: 'Intro Video', url: 'https://youtube.com/...' }
+        ],
         points: 0,
-        startDate: new Date(),
-        deadline: new Date(new Date().setDate(new Date().getDate() + 7)),
-        isMandatory: true,
+        availableFrom: new Date(),
+        mandatory: true,
         courseId: courseWeb.id
     });
 
@@ -68,8 +92,10 @@ async function seed() {
     const lab1 = await Lab.create({
         title: 'HTML Basics Lab',
         description: 'Complete the following tasks to practice HTML structure.',
-        maxScore: 20,
+        order: 1,
+        points: 20,
         language: 'html',
+        instruction: 'Create a basic webpage.',
         lectureId: lecture1.id
     });
 
@@ -104,7 +130,7 @@ async function seed() {
     // Week 2: Python
     const lecture2 = await Lecture.create({
         title: 'Python Syntax',
-        content: '# Python Basics\nVariables, loops...',
+        description: '# Python Basics\nVariables, loops...',
         order: 1,
         courseId: coursePython.id
     });
@@ -112,8 +138,11 @@ async function seed() {
     const lab2 = await Lab.create({
         title: 'Python Variables',
         description: 'Practice Python variables',
-        maxScore: 10,
+        points: 10,
         language: 'python',
+        testCases: [
+            { input: '', expectedOutput: 'Hello Python', points: 10 }
+        ],
         lectureId: lecture2.id
     });
 
@@ -123,6 +152,16 @@ async function seed() {
         startingCode: 'print()',
         expectedOutput: 'Hello Python',
         points: 10
+    });
+
+    // Exam
+    await Exam.create({
+        title: 'Midterm Exam',
+        type: 'midterm',
+        totalPoints: 100,
+        startTime: new Date(new Date().setDate(new Date().getDate() + 30)),
+        endTime: new Date(new Date().setDate(new Date().getDate() + 30) + 7200000), // +2 hours
+        courseId: courseWeb.id
     });
 
     console.log('Database Seeded!');

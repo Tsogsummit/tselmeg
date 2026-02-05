@@ -8,39 +8,21 @@ import logo from '../assets/tselmeg.jpg';
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const [className, setClassName] = useState('');
     const [error, setError] = useState('');
-    const [needsClass, setNeedsClass] = useState(false);
     const { login } = useAuth();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
         try {
-            // If we already know we need class, send it.
-            // If not, try without it first (unless user filled it anyway?)
-            // Actually, let's always send className if it has value.
-
-            await login(username, password, className || null);
+            await login(username, password);
             navigate('/');
         } catch (err) {
             console.error(err);
             const msg = err.response?.data?.message || 'Login failed';
-
-            if (msg.includes('provide Class') || msg.includes('User not found')) {
-                // If user not found, we assume they might be new -> Show Class Input
-                if (!needsClass) {
-                    setNeedsClass(true);
-                    setError('Анх удаа нэвтэрч байна уу? Ангиа оруулна уу (Ж: 10a).');
-                } else {
-                    setError(msg); // Already showed class input, but maybe class was wrong
-                }
-            } else {
-                setError('Нэвтрэхэд алдаа гарлаа');
-            }
+            setError(msg);
         } finally {
             setIsLoading(false);
         }
@@ -88,7 +70,7 @@ const Login = () => {
                                     type="text"
                                     required
                                     className="w-full bg-white/5 border border-white/10 rounded-xl px-12 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                                    placeholder="Нэвтрэх нэр / Сурагчийн код"
+                                    placeholder="Имэйл эсвэл Нэвтрэх нэр"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
                                 />
@@ -105,30 +87,6 @@ const Login = () => {
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
                             </div>
-
-                            <AnimatePresence>
-                                {needsClass && (
-                                    <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: 'auto', opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        className="overflow-hidden"
-                                    >
-                                        <div className="relative pt-1">
-                                            <FaUsers className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 mt-0.5" />
-                                            <input
-                                                type="text"
-                                                required={needsClass}
-                                                className="w-full bg-white/5 border border-indigo-500/50 rounded-xl px-12 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                                                placeholder="Class Group (e.g. 10a)"
-                                                value={className}
-                                                onChange={(e) => setClassName(e.target.value)}
-                                                autoFocus
-                                            />
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
                         </div>
 
                         <button
@@ -138,7 +96,7 @@ const Login = () => {
                         >
                             {isLoading ? 'Уншиж байна...' : (
                                 <>
-                                    {needsClass ? 'Бүртгүүлэх & Нэвтрэх' : 'Нэвтрэх'} <FaArrowRight />
+                                    Нэвтрэх <FaArrowRight />
                                 </>
                             )}
                         </button>

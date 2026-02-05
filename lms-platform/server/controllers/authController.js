@@ -3,39 +3,23 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 exports.login = async (req, res) => {
-    const { username, password, className, fullName } = req.body;
-    // Expected input: username (unique ID), password, className (e.g. '10a' - optional if admin), fullName
+    const { loginIdentifier, password } = req.body;
+    // loginIdentifier can be username or email
 
     try {
-        // 1. Check if user exists
-        let user = await User.findOne({ where: { username } });
+        // 1. Check if user exists (by username OR email)
+        const { Op } = require('sequelize');
+        let user = await User.findOne({
+            where: {
+                [Op.or]: [
+                    { username: loginIdentifier },
+                    { email: loginIdentifier }
+                ]
+            }
+        });
 
         if (!user) {
-            // Auto-create logic for students
-            // If className provided, try to find the class
-            if (!className) {
-                return res.status(400).json({ message: 'User not found. Please provide Class to register.' });
-            }
-
-            const classGroup = await ClassGroup.findOne({ where: { name: className } });
-            if (!classGroup) {
-                return res.status(400).json({ message: 'Class not found' });
-            }
-
-            // Create new student
-            // Password hashing
-            const hashedPassword = await bcrypt.hash(password, 10);
-            user = await User.create({
-                username,
-                password: hashedPassword,
-                role: 'student',
-                fullName: fullName || username,
-                classGroupId: classGroup.id
-            });
-
-            // Generate Token
-            const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET || 'secret', { expiresIn: '1d' });
-            return res.status(201).json({ message: 'Account created and logged in', token, user });
+            return res.status(401).json({ message: 'Invalid credentials' });
         }
 
         // 2. User exists - Verify password
@@ -45,11 +29,27 @@ exports.login = async (req, res) => {
         }
 
         // Generate Token
-        const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET || 'secret', { expiresIn: '1d' });
-        res.json({ message: 'Logged in', token, user });
+        // Using environment variable for secret or fallback
+        const token = jwt.sign(
+            { id: user.id, role: user.role },
+            process.env.JWT_SECRET || 'secret',
+            { expiresIn: '1d' }
+        );
+
+        res.json({
+            message: 'Logged in successfully',
+            token,
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                role: user.role,
+                fullName: user.fullName
+            }
+        });
 
     } catch (error) {
-        console.error(error);
+        console.error('Login Error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };

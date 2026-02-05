@@ -7,10 +7,24 @@ const User = sequelize.define('User', {
         autoIncrement: true,
         primaryKey: true,
     },
-    username: { // Student Code or Admin Username
+    username: {
         type: DataTypes.STRING,
         unique: true,
         allowNull: false,
+    },
+    email: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: true // Should be required for new users
+    },
+    phone: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    studentId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        unique: true
     },
     password: {
         type: DataTypes.STRING,

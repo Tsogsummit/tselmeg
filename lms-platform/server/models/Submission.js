@@ -30,6 +30,22 @@ const Submission = sequelize.define('Submission', {
     submittedAt: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
+    },
+    gradingDetails: {
+        type: DataTypes.JSON, // Test case results
+        allowNull: true
+    },
+    executionTime: {
+        type: DataTypes.FLOAT, // milliseconds or seconds
+        allowNull: true
+    },
+    memoryUsage: {
+        type: DataTypes.FLOAT, // MB
+        allowNull: true
+    },
+    score: {
+        type: DataTypes.FLOAT,
+        defaultValue: 0
     }
 });
 
