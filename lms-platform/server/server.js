@@ -38,7 +38,7 @@ const startServer = async () => {
         }
 
         // Sync models (force: false ensures we don't drop tables on restart, alter: true updates schema)
-        await sequelize.sync({ alter: true });
+        await sequelize.sync({ alter: false });
 
         if (sequelize.getDialect() === 'sqlite') {
             await sequelize.query('PRAGMA foreign_keys = ON;');

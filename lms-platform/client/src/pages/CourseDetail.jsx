@@ -61,6 +61,17 @@ const CourseDetail = () => {
         );
     }
 
+    const safeParseJSON = (data) => {
+        if (!data) return [];
+        if (typeof data === 'object') return data;
+        try {
+            return JSON.parse(data);
+        } catch (e) {
+            console.error("JSON Parse Error", e);
+            return [];
+        }
+    };
+
     if (!course) return <div className="text-white">Хичээл олдсонгүй</div>;
 
     return (
@@ -177,9 +188,9 @@ const CourseDetail = () => {
                                         </div>
 
                                         {/* File Attachments */}
-                                        {activeLecture.materials && activeLecture.materials.length > 0 && (
+                                        {activeLecture.materials && (
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                                                {activeLecture.materials.map((material, idx) => (
+                                                {safeParseJSON(activeLecture.materials).map((material, idx) => (
                                                     <div key={idx} className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center gap-4 text-blue-300">
                                                         <div className="p-3 bg-blue-500/20 rounded-lg">
                                                             <FaBookOpen size={20} />
@@ -210,7 +221,7 @@ const CourseDetail = () => {
                                                     <div key={q.id} className="bg-[#0f172a]/80 p-6 rounded-xl border border-white/10">
                                                         <p className="font-medium text-gray-200 mb-4">{i + 1}. {q.text}</p>
                                                         <div className="space-y-2">
-                                                            {JSON.parse(q.options || '[]').map((opt, idx) => (
+                                                            {safeParseJSON(q.options).map((opt, idx) => (
                                                                 <label key={idx} className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 cursor-pointer transition">
                                                                     <input type="radio" name={`q-${q.id}`} className="accent-indigo-500 w-5 h-5" />
                                                                     <span className="text-gray-400">{opt}</span>

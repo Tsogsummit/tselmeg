@@ -24,9 +24,11 @@ async function seed() {
         semester: 'Fall 2024',
         credits: 3,
         department: 'CS',
-        gradingScheme: { lectures: 20, labs: 40, exams: 40 },
+        gradingScheme: { lectures: 20, labs: 40, finalExam: 40 },
         startDate: '2024-09-01',
-        endDate: '2024-12-31'
+        endDate: '2024-12-31',
+        allowLateSubmission: true,
+        latePenalty: 10
     });
     const coursePython = await Course.create({
         name: 'Python Programming',
@@ -35,7 +37,7 @@ async function seed() {
         semester: 'Fall 2024',
         credits: 3,
         department: 'CS',
-        gradingScheme: { lectures: 20, labs: 50, exams: 30 }
+        gradingScheme: { lectures: 20, labs: 50, finalExam: 30 }
     });
 
     // 3. Assign Courses to Classes
@@ -58,7 +60,18 @@ async function seed() {
         email: 'admin@school.edu',
         password: adminPass,
         role: 'admin',
-        fullName: 'Teacher Bat',
+        fullName: 'System Admin',
+    });
+
+    // Teacher
+    const teacherPass = await bcrypt.hash('teacher123', 10);
+    await User.create({
+        username: 'teacher1',
+        email: 'teacher1@school.edu',
+        password: teacherPass,
+        role: 'teacher',
+        fullName: 'Teacher Saruul',
+        specialization: 'Computer Science'
     });
 
     // Students
@@ -69,7 +82,8 @@ async function seed() {
         password: await bcrypt.hash('123456', 10), // Default pass
         role: 'student',
         fullName: 'Bat Bold',
-        classGroupId: classes[0].id
+        classGroupId: classes[0].id,
+        classYear: '2024'
     });
 
     // 5. Content for Web Course
@@ -96,7 +110,8 @@ async function seed() {
         points: 20,
         language: 'html',
         instruction: 'Create a basic webpage.',
-        lectureId: lecture1.id
+        lectureId: lecture1.id,
+        allowedAttempts: 3
     });
 
     await LabTask.bulkCreate([

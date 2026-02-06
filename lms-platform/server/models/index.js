@@ -16,8 +16,8 @@ User.belongsTo(ClassGroup, { foreignKey: 'classGroupId' });
 
 // Class - Course Relationship (Many-to-Many)
 // A class (10a) can have multiple courses (HTML, Math), A course can belong to multiple classes (HTML for 10a, 10b)
-ClassGroup.belongsToMany(Course, { through: 'ClassCourses' });
-Course.belongsToMany(ClassGroup, { through: 'ClassCourses' });
+ClassGroup.belongsToMany(Course, { through: 'ClassCourses', as: 'Courses' });
+Course.belongsToMany(ClassGroup, { through: 'ClassCourses', as: 'ClassGroups' });
 
 // Course - Lecture
 Course.hasMany(Lecture, { foreignKey: 'courseId' });

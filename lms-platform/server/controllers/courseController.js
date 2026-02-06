@@ -31,7 +31,8 @@ exports.getCourses = async (req, res) => {
                     ]
                 }]
             });
-            courses = classGroup ? classGroup.Courses : [];
+            courses = classGroup ? classGroup.Courses : []; // Access via the alias 'Courses'
+            if (!courses) courses = [];
         }
         res.json(courses);
     } catch (error) {
@@ -53,25 +54,57 @@ exports.createCourse = async (req, res) => {
 // Get Course Details (with Lectures, Labs, Exams)
 exports.getCourse = async (req, res) => {
     try {
-        const course = await Course.findByPk(req.params.id, {
+        let course = await Course.findByPk(req.params.id, {
             include: [
                 {
                     model: Lecture,
                     include: [
-                        { model: Lab, include: ['LabTasks'] }, // Include Labs and their Tasks
+                        { model: Lab, include: ['LabTasks'] },
                         Question
-                    ] // Include Lab and Quiz
+                    ]
                 },
-                {
-                    model: Exam
-                }
+                Exam
             ],
             order: [[Lecture, 'order', 'ASC']]
         });
 
         if (!course) return res.status(404).json({ message: 'Course not found' });
-        res.json(course);
+
+        // Convert to plain object to modify
+        const courseData = course.toJSON();
+
+        // Manually parse JSON fields for SQLite compatibility
+        if (courseData.Lectures) {
+            courseData.Lectures = courseData.Lectures.map(lecture => {
+                // Parse Materials
+                if (typeof lecture.materials === 'string') {
+                    try {
+                        lecture.materials = JSON.parse(lecture.materials);
+                    } catch (e) {
+                        lecture.materials = [];
+                    }
+                }
+
+                // Parse Question Options
+                if (lecture.Questions) {
+                    lecture.Questions = lecture.Questions.map(q => {
+                        if (typeof q.options === 'string') {
+                            try {
+                                q.options = JSON.parse(q.options);
+                            } catch (e) {
+                                q.options = [];
+                            }
+                        }
+                        return q;
+                    });
+                }
+                return lecture;
+            });
+        }
+
+        res.json(courseData);
     } catch (error) {
+        console.error("Get Course Error:", error);
         res.status(500).json({ message: 'Server Error' });
     }
 };
